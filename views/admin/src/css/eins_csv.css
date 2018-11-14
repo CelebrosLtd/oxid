@@ -1,0 +1,13 @@
+.progress-bars{position:relative;overflow:hidden;width:100%;height:40px;}
+.progress-bars > div{width:100%;position:absolute;background:#fff;}
+.progress-bar-upload{z-index:20;}
+.progress-bar-import{z-index:10;}
+
+.progress.no-transitions,
+.progress.no-transitions .bar {
+    -webkit-transition: none;
+    -moz-transition: none;
+    -ms-transition: none;
+    -o-transition: none;
+    transition: none;
+}

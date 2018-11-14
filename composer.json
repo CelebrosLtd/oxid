@@ -1,0 +1,19 @@
+{
+  "name": "celebros/oxid-conversionpro",
+  "description": "Celebros Conversionpro module for OXID eShop version 6.0.X",
+  "version": "dev-packagist",
+  "type": "oxideshop-module",
+  "extra": {
+    "oxideshop": {
+      "target-directory": "celebros/conversionpro"
+    }
+  },
+  "require": {
+    "php": ">=5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Celebros\\Conversionpro\\": "../../../source/modules/celebros/conversionpro"
+    }
+  }
+}

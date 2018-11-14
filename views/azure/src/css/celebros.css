@@ -1,0 +1,4 @@
+.extra-answers.hidden{display:none;}
+#sidebar .tree li *{vertical-align:middle;}
+#sidebar .tree li input{margin:0 5px 2px 2px;}
+#sidebar .tree .extra-answers-button a:hover{background:inherit;color:inherit;}

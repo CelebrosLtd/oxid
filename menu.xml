@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<OX>
+  <OXMENU id="NAVIGATION_ESHOPADMIN">
+    <MAINMENU id="CELEBROS_CONVERSIONPRO">
+        <SUBMENU id="CELEBROS_EXPORT" cl="celebros_conversionpro_admin_export" rights="malladmin" />
+        <SUBMENU id="CELEBROS_SYNCHRO" cl="celebros_conversionpro_admin_synchro" rights="malladmin" />
+      <SUBMENU id="CELEBROS_SETTINGS" cl="celebros_conversionpro_admin_settings" rights="malladmin" />
+    </MAINMENU>
+  </OXMENU>
+</OX>
