@@ -1,17 +1,15 @@
 <?php
-
-/*
- *  Developed by webfrisch.de
- *  Author: Lukas Dierks <lukas.dierks at webfrisch.de>
- *  Date: Jun 5, 2013
- */
-
-class eins_csv_celebros_artextends_export extends eins_csv_export {
+class eins_csv_celebros_artextends_export extends \Celebros\Conversionpro\Core\CsvExport {
 
     protected static $_oDBConn;
 
-    protected function _getDataMap($iLimit, $iOffset, $aParams) {
-        $soxId = oxConfig::getInstance()->getActiveShop()->getId();
+    protected $_headerArray = [
+        "OXID","OXLONGDESC","OXLONGDESC_1","OXLONGDESC_2","OXLONGDESC_3","OXTIMESTAMP"
+    ];
+    
+    protected function _getDataMap($iLimit, $iOffset, $aParams)
+    {
+        $soxId = $this->getConfig()->getActiveShop()->getId();
         
         $aDataMap = array(
             0 => array(
@@ -22,11 +20,7 @@ class eins_csv_celebros_artextends_export extends eins_csv_export {
                     2 => array('field' => 'OXLONGDESC_1'),
                     3 => array('field' => 'OXLONGDESC_2'),
                     4 => array('field' => 'OXLONGDESC_3'),
-                    5 => array('field' => 'OXTAGS'),
-                    6 => array('field' => 'OXTAGS_1'),
-                    7 => array('field' => 'OXTAGS_2'),
-                    8 => array('field' => 'OXTAGS_3'),
-                    9 => array('field' => 'OXTIMESTAMP')
+                    5 => array('field' => 'OXTIMESTAMP')
                 )
             )
         );
@@ -44,7 +38,7 @@ class eins_csv_celebros_artextends_export extends eins_csv_export {
 
     public static function getDb() {
         if (!eins_csv_celebros_artextends_export::$_oDBConn)
-            eins_csv_celebros_artextends_export::$_oDBConn = oxDb::getDb();
+            eins_csv_celebros_artextends_export::$_oDBConn = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
         return eins_csv_celebros_artextends_export::$_oDBConn;
     }
@@ -61,21 +55,13 @@ class eins_csv_celebros_artextends_export extends eins_csv_export {
         return "celebros_artextends_export";
     }
 
-    public function _getDelimiter() {
-        return "|";
-    }
-
-    public function _getFieldWrapper() {
-        return '';
-    }
-
     public function _getPluginClass() {
         return 'eins_csv_celebros_artextends_export';
     }
 
     public function getRSSize($aParams) {
         $oDb = eins_csv_celebros_artextends_export::getDb();
-        $oRs = $oDb->Execute("SELECT COUNT(oxid) FROM oxartextends");
+        $oRs = $oDb->select("SELECT COUNT(oxid) FROM oxartextends");
         return $oRs->fields[0];
     }
 
@@ -90,10 +76,5 @@ class eins_csv_celebros_artextends_export extends eins_csv_export {
     public function getFixedOutputFileName() {
         return 'oxartextends.csv';
     }
-    
-    public function getHeaderLine() {
-        return "OXID|OXLONGDESC|OXLONGDESC_1|OXLONGDESC_2|OXLONGDESC_3|OXTAGS|OXTAGS_1|OXTAGS_2|OXTAGS_3|OXTIMESTAMP\n";
-    }
-}
 
-?>
+}

@@ -1,33 +1,32 @@
 <?php
 namespace Celebros\Conversionpro\Controller\Admin;
 
-class Export extends oxAdminView {
+use OxidEsales\Eshop\Application\Controller\Admin\ShopConfiguration;
 
+class Export extends ShopConfiguration //oxAdminView
+{
     protected $_aPlugins = array();
     protected $_sOutputFileHash;
 
-    public function render() {
+    public function render()
+    {
         $this->_loadPlugins();
 
-        $this->_aViewData['sSessionId'] = oxConfig::getParameter('force_admin_sid');
-        $this->_aViewData['sToken'] = oxConfig::getParameter('stoken');
-
+        $this->_aViewData['sSessionId'] = $this->getConfig()->getConfigParam('force_admin_sid');
+        $this->_aViewData['sToken'] = $this->getConfig()->getConfigParam('stoken');
         $this->_aViewData['sOutputFileHash'] = md5(microtime());
-
         $this->_aViewData['aExportedFiles'] = $this->_getExportFileList();
+        $this->_aViewData['sShopId'] = $this->getConfig()->getActiveShop()->getId();
         
-        $this->_aViewData['sShopId'] = oxConfig::getInstance()->getActiveShop()->getId();
-
-        return "eins_export_overview.tpl";
+        return "celebros_export_overview.tpl";
     }
 
-    protected function _loadPlugins() {
-        $files = glob($this->getViewConfig()->getModulePath('eins_celebros') . 'plugins/export/*.php');
-
+    protected function _loadPlugins()
+    {
+        $files = glob($this->getViewConfig()->getModulePath('celebros_conversionpro') . 'plugins/export/*.php');
         foreach ($files as $file) {
-
             require_once($file);
-            $oPluginClass = new ReflectionClass(basename($file, '.php'));
+            $oPluginClass = new \ReflectionClass(basename($file, '.php'));
             $oPlugin = $oPluginClass->newInstance();
             if (!$oPlugin->getParentPlugin()) {
                 $this->_aPlugins[$oPlugin->getId()] = $oPlugin;
@@ -43,16 +42,16 @@ class Export extends oxAdminView {
         $this->_aViewData['aPlugins'] = $this->_aPlugins;
     }
 
-    public function export() {
+    public function export()
+    {
         $this->_loadPlugins();
-
-        $sPluginId = oxConfig::getParameter('pluginId');
-        $iOffset = oxConfig::getParameter('iOffset');
-        $iAmount = oxConfig::getParameter('iAmount');
-        $sOutputFileHash = oxConfig::getParameter('sOutputFileHash');
+        $sPluginId = $this->getConfig()->getRequestParameter('pluginId');
+        $iOffset = $this->getConfig()->getRequestParameter('iOffset');
+        $iAmount = $this->getConfig()->getRequestParameter('iAmount');
+        $sOutputFileHash = $this->getConfig()->getRequestParameter('sOutputFileHash');
 
         foreach ($this->_aPlugins[$sPluginId]->getExportParamInfo() as $sParamName => $sParam) {
-            $aParams[$sParamName] = oxConfig::getParameter($sParamName);
+            $aParams[$sParamName] = $this->getConfig()->getRequestParameter($sParamName);
         }
 
         $blResult = $this->_aPlugins[$sPluginId]->export($sOutputFileHash, $iOffset, $iAmount, $aParams);
@@ -60,16 +59,17 @@ class Export extends oxAdminView {
         die();
     }
 
-    protected function _getExportFileList() {
+    protected function _getExportFileList()
+    {
         foreach ($this->_aPlugins as $oPlugin) {
 
             $aExportedFiles[$oPlugin->getId()] = array();
-            $handle = opendir($this->getConfig()->getConfigParam('sShopDir') . 'modules/eins_celebros/export/');
+            $handle = opendir($this->getConfig()->getConfigParam('sShopDir') . 'modules/celebros/conversionpro/export/');
             while (false !== ($file = readdir($handle))) {
 
                 if (!strncmp($file, $oPlugin->getId(), strlen($oPlugin->getId())) ||
                         $file == $oPlugin->getFixedOutputFileName()) {
-                    $sFullPath = $this->getConfig()->getConfigParam('sShopDir') . 'modules/eins_celebros/export/' . $file;
+                    $sFullPath = $this->getConfig()->getConfigParam('sShopDir') . 'modules/celebros/conversionpro/export/' . $file;
                     $sLastModified = date('d.m.Y H:i:s', filemtime($sFullPath));
                     $aExportedFiles[$oPlugin->getId()][$sLastModified] =
                             array('fileName' => $file,
@@ -80,7 +80,7 @@ class Export extends oxAdminView {
                     foreach ($oPlugin->getChildPlugins() as $oChildPlugin) {
                         if (!strncmp($file, $oChildPlugin->getId(), strlen($oChildPlugin->getId())) ||
                                 $file == $oChildPlugin->getFixedOutputFileName()) {
-                            $sFullPath = $this->getConfig()->getConfigParam('sShopDir') . 'modules/eins_celebros/export/' . $file;
+                            $sFullPath = $this->getConfig()->getConfigParam('sShopDir') . 'modules/celebros/conversionpro/export/' . $file;
                             $sLastModified = date('d.m.Y H:i', filemtime($sFullPath));
                             $aExportedFiles[$oPlugin->getId()][$sLastModified . "-" . $oChildPlugin->getId()] =
                                     array('fileName' => $file,
@@ -95,12 +95,14 @@ class Export extends oxAdminView {
         return $aExportedFiles;
     }
 
-    public function getRSSize() {
+    public function getRSSize()
+    {
         $this->_loadPlugins();
 
-        $sPluginId = oxConfig::getParameter('pluginId');
+        $aParams = array();
+        $sPluginId = $this->getConfig()->getRequestParameter('pluginId');
         foreach ($this->_aPlugins[$sPluginId]->getExportParamInfo() as $sParamName => $sParam) {
-            $aParams[$sParamName] = oxConfig::getParameter($sParamName);
+            $aParams[$sParamName] = $this->getConfig()->getRequestParameter($sParamName);
         }
 
         $blResult = $this->_aPlugins[$sPluginId]->getRSSize($aParams);
@@ -108,15 +110,14 @@ class Export extends oxAdminView {
         die($blResult);
     }
 
-    public function finalizeExport() {
+    public function finalizeExport()
+    {
         $this->_loadPlugins();
 
-        $sPluginId = oxConfig::getParameter('pluginId');
+        $sPluginId = $this->getConfig()->getRequestParameter('pluginId');
 
         $this->_aPlugins[$sPluginId]->afterExport();
         die();
     }
 
 }
-
-?>

@@ -6,7 +6,7 @@
  *  Date: Jun 5, 2013
  */
 
-class eins_csv_celebros_selectlist_export extends eins_csv_export {
+class eins_csv_celebros_selectlist_export extends \Celebros\Conversionpro\Core\CsvExport {
 
     protected static $_oDBConn;
 

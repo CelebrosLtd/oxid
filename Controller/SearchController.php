@@ -1,13 +1,8 @@
 <?php
+namespace Celebros\Conversionpro\Controller;
 
-/*
- *  Developed by webfrisch.de
- *  Author: Lukas Dierks <lukas.dierks at webfrisch.de>
- *  Date: Aug 28, 2013
- */
-
-class celebros_search extends celebros_search_parent {
-
+class SearchController extends SearchController_parent
+{
     /**
      * Current class template name.
      * @public string
@@ -29,18 +24,25 @@ class celebros_search extends celebros_search_parent {
      *
      * @return null
      */
-    public function init() {
+    public function init()
+    {
         parent :: init();
     }
 
+    public function getSession()
+    {
+        return \OxidEsales\Eshop\Core\Registry::getSession();
+    }
+    
     /**
      * Gets Celebros search API object
      *
      * @return object Celebros search API object
      */
-    public function getCelebrosSearchApi() {
+    public function getCelebrosSearchApi()
+    {
         if (is_null($this->oAPI)) {
-            $this->oAPI = oxNew("cel_qwiserapi");
+            $this->oAPI = oxNew("\Celebros\Conversionpro\Core\Celebros\QwiserAPI");
         }
         return $this->oAPI;
     }
@@ -50,7 +52,8 @@ class celebros_search extends celebros_search_parent {
      * 
      * @return string
      */
-    public function render($sSearchParam = NULL) {
+    public function render($sSearchParam = NULL)
+    {
         parent :: render();
         $myConfig = $this->getConfig();
 
@@ -61,7 +64,7 @@ class celebros_search extends celebros_search_parent {
         $iDefaultPageSize = (int) $myConfig->getConfigParam('iCel_DefaultPageSize');
 
         //Oxid settings
-        $sSearchParam = $sSearchParam ? $sSearchParam : $myConfig->getParameter("searchparam", true);
+        $sSearchParam = $sSearchParam ? $sSearchParam : $myConfig->getRequestParameter("searchparam", true);
 //        $sSearchParam = utf8_encode($sSearchParam);
         $this->_sSearchParamForHtml = $sSearchParam;
 
@@ -69,15 +72,15 @@ class celebros_search extends celebros_search_parent {
 
         // convert extended chars
         $sSearchStr = rawurlencode($this->ReplaceExtendedChars($sSearchStr));
-        $sSearchHandle = $oAPI->SearchHandle_decode($myConfig->getParameter("sQWSearchHandle"));
+        $sSearchHandle = $oAPI->SearchHandle_decode($myConfig->getRequestParameter("sQWSearchHandle"));
 
         $qsr = $this->_executeQwiserAction($sSearchHandle, $sInitialSearchStr);
 //        var_dump($qsr->SearchHandle);
         
         $this->_aViewData['sCelebrosLogHandle'] = $qsr->LogHandle;
-        oxSession::getInstance()->setVar('sCelebrosLogHandle', $qsr->LogHandle);
+        $this->getSession()->setVariable('sCelebrosLogHandle', $qsr->LogHandle);
 
-        $this->getSession()->setVar('cel_oCelebros', $qsr);
+        $this->getSession()->setVariable('cel_oCelebros', $qsr);
 
         //Check if we had any Errors
         if (!$oAPI->blLastOperationSucceeded) {
@@ -92,8 +95,8 @@ class celebros_search extends celebros_search_parent {
         $this->_setSearchLink($sSearchStr, $sSearchHandle, $qsr->SearchInformation->CurrentPage);
 
         $this->_aViewData['SearchHandle'] = $sSearchHandle;
-        oxSession::getInstance()->setVar('sCelSearchSessionId', $sSearchHandle);
-        oxSession::getInstance()->setVar('sCelLogHandle', $qsr->LogHandle);
+        $this->getSession()->setVariable('sCelSearchSessionId', $sSearchHandle);
+        $this->getSession()->setVariable('sCelLogHandle', $qsr->LogHandle);
 
 
         $this->_setHiddenSid($sSearchHandle, $qsr->SearchInformation);
@@ -157,11 +160,11 @@ class celebros_search extends celebros_search_parent {
             $sListOrderBy = strtr($cel_FieldName, array_flip($aMappingFields));
             $this->_aViewData['listorderby'] = $sListOrderBy;
             $this->_sListOrderBy = $sListOrderBy;
-            $this->getSession()->setVar("listorderby", $sListOrderBy);
+            $this->getSession()->setVariable("listorderby", $sListOrderBy);
 
             $sListOrder = strtr($cel_Ascending, array_flip($this->_aSortingOrderMapping));
             $this->_aViewData['listorder'] = $sListOrder;
-            $this->getSession()->setVar("listorder", $sListOrder);
+            $this->getSession()->setVariable("listorder", $sListOrder);
             $this->_sListOrderDir = $sListOrder;
         }
     }
@@ -222,9 +225,9 @@ class celebros_search extends celebros_search_parent {
         $myConfig = $this->getConfig();
         $aMappingFields = $this->_getMappingFields();
         $sSortFieldName = $myConfig->getConfigParam('sCel_DefaultSortingfield');
-        $sListOrderBy = $myConfig->getParameter("listorderby");
+        $sListOrderBy = $myConfig->getRequestParameter("listorderby");
         if ($sListOrderBy == "")
-            $sListOrderBy = $this->getSession()->getVar("listorderby");
+            $sListOrderBy = $this->getSession()->getVariable("listorderby");
         if ($sListOrderBy != "")
             $sSortFieldName = strtr(strtoupper($sListOrderBy), $aMappingFields);
         return $sSortFieldName;
@@ -238,7 +241,7 @@ class celebros_search extends celebros_search_parent {
     protected function _getSearchNumericSort() {
         $myConfig = $this->getConfig();
         $aSortingIsNumericMapping = $myConfig->getConfigParam('mappingisnumericsortfields');
-        $sListOrderBy = $myConfig->getParameter("listorderby");
+        $sListOrderBy = $myConfig->getRequestParameter("listorderby");
         $bNumericSort = $aSortingIsNumericMapping[strtoupper($sListOrderBy)] ? "true" : "false";
         return $bNumericSort;
     }
@@ -251,9 +254,9 @@ class celebros_search extends celebros_search_parent {
     protected function _getSortAscending() {
         $myConfig = $this->getConfig();
         $iSortAscending = $myConfig->getConfigParam('bCel_DefaultAscending');
-        $sListOrder = $myConfig->getParameter("listorder");
+        $sListOrder = $myConfig->getRequestParameter("listorder");
         if ($sListOrder == "")
-            $sListOrder = $this->getSession()->getVar("listorder");
+            $sListOrder = $this->getSession()->getVariable("listorder");
         if ($sListOrder != "")
             $iSortAscending = strtr($sListOrder, $this->_aSortingOrderMapping);
         return $iSortAscending;
@@ -281,19 +284,19 @@ class celebros_search extends celebros_search_parent {
 
         switch ($iAction) {
             case "1" : // Set page
-                $iPage = $myConfig->getParameter("iQWPage");
+                $iPage = $myConfig->getRequestParameter("iQWPage");
                 $qsr = $oAPI->MoveToPage($sSearchHandle, $iPage);
                 break;
             case "2" : // Answer
-                $sAnswerId = $myConfig->getParameter("sQWAnswerId");
+                $sAnswerId = $myConfig->getRequestParameter("sQWAnswerId");
                 $qsr = $oAPI->AnswerQuestion($sSearchHandle, $sAnswerId, '1');
                 break;
             case "3" : // Remove answers
-                $iStartIndex = $myConfig->getParameter("iQWStartIndex");
+                $iStartIndex = $myConfig->getRequestParameter("iQWStartIndex");
                 $qsr = $oAPI->RemoveAnswersFrom($sSearchHandle, $iStartIndex);
                 break;
             case "4" : // First question
-                $sQuestionId = $myConfig->getParameter("sQWQuestionId");
+                $sQuestionId = $myConfig->getRequestParameter("sQWQuestionId");
                 $qsr = $oAPI->ForceQuestionAsFirst($sSearchHandle, $sQuestionId);
                 break;
             case "5" : //Set Page Size
@@ -303,23 +306,23 @@ class celebros_search extends celebros_search_parent {
                 $qsr = $oAPI->Search($sInitialSearchStr);
                 break;
             case "7" : //Custom Results
-                $sNewSearch = $myConfig->getParameter("sQWNewSearch");
-                $sPreviousSearchHandle = $myConfig->getParameter("sQWPreviousSearchHandle");
+                $sNewSearch = $myConfig->getRequestParameter("sQWNewSearch");
+                $sPreviousSearchHandle = $myConfig->getRequestParameter("sQWPreviousSearchHandle");
                 $qsr = $oAPI->GetCustomResults($sSearchHandle, $sNewSearch, $sPreviousSearchHandle);
                 break;
             case "8" : //Change Price Colum
-                $sPriceColum = $myConfig->getParameter("sQWPriceColum");
+                $sPriceColum = $myConfig->getRequestParameter("sQWPriceColum");
                 $qsr = $oAPI->ChangePriceColumn($sSearchHandle, $sPriceColum);
                 break;
             case "9" : //Activate Profile
-                $sSearchProfile = $myConfig->getParameter("sQWSearchProfile");
+                $sSearchProfile = $myConfig->getRequestParameter("sQWSearchProfile");
                 $qsr = $oAPI->ActivateProfile($sSearchHandle, $sSearchProfile);
                 break;
             case "10" : //set sort by
                 $this->_MakeSortRequest($sSearchHandle, $sSortFieldName, $bNumericSort, $iSortAscending);
                 break;
             case "11" : // Remove answers
-                $sAnswerId = $myConfig->getParameter("sQWAnswerId");
+                $sAnswerId = $myConfig->getRequestParameter("sQWAnswerId");
                 $qsr = $oAPI->RemoveAnswer($sSearchHandle, $sAnswerId);
                 break;
             default :
@@ -383,7 +386,7 @@ class celebros_search extends celebros_search_parent {
 
         // Cache ID's to session
         $aQwiserCachedIDs = array("articlecount" => $relevantProductsCount, "pagecount" => $searchInformation->NumberOfPages, "pagesize" => $searchInformation->PageSize, $searchInformation->CurrentPage => array("SearchHandle" => $searchHandle, "aID" => $aQwiserID));
-        $this->getSession()->setVar("aQwiserCachedIDs", $aQwiserCachedIDs);
+        $this->getSession()->setVariable("aQwiserCachedIDs", $aQwiserCachedIDs);
 
         $sID = implode(",", $aID);
 
@@ -438,19 +441,19 @@ class celebros_search extends celebros_search_parent {
         $myConfig = $this->getConfig();
         $oAPI = $this->getCelebrosSearchApi();
 
-        $sQWSearchProfile = $myConfig->getParameter("sQWSearchProfile");
+        $sQWSearchProfile = $myConfig->getRequestParameter("sQWSearchProfile");
         if ($sQWSearchProfile == "") 
             $sQWSearchProfile = $myConfig->getConfigParam('sCel_DefaultSearchProfile');
 
-        $sQWAnswerId = $myConfig->getParameter("sQWAnswerId");
+        $sQWAnswerId = $myConfig->getRequestParameter("sQWAnswerId");
         if ($sQWAnswerId == "")
             $sQWAnswerId = $myConfig->getConfigParam('iCel_DefaultAnswerId');
 
-        $sQWEffectOnSearchPath = $myConfig->getParameter("sQWEffectOnSearchPath");
+        $sQWEffectOnSearchPath = $myConfig->getRequestParameter("sQWEffectOnSearchPath");
         if ($sQWEffectOnSearchPath == "")
             $sQWEffectOnSearchPath = $myConfig->getConfigParam('iCel_DefaultEffectOnSearchPath');
 
-        $sQWPriceColum = $myConfig->getParameter("sQWPriceColum");
+        $sQWPriceColum = $myConfig->getRequestParameter("sQWPriceColum");
         if ($sQWPriceColum == "")
             $sQWPriceColum = $myConfig->getConfigParam('sCel_DefaultPriceColum');
 
@@ -506,7 +509,7 @@ class celebros_search extends celebros_search_parent {
      */
     protected function _setPageNavigation($qsr, $sSearchStr, $sSearchHandle, $myConfig) {
         // generate the page navigation
-        $pageNavigation = new stdClass();
+        $pageNavigation = new \stdClass();
         $pageNavigation->iArtCnt = $qsr->RelevantProductsCount; //$qsr->SearchInformation->PageSize;
 
         $pageNavigation->NrOfPages = $qsr->SearchInformation->NumberOfPages;
@@ -544,7 +547,7 @@ class celebros_search extends celebros_search_parent {
      */
     protected function _addNavigationPages($pageNavigation, $myConfig, $sSearchStr, $sSearchHandle) {
         for ($i = 1; $i < $pageNavigation->NrOfPages + 1; $i++) {
-            $page = new stdClass();
+            $page = new \stdClass();
             $page->url = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&iQWPage=" . ($i - 1) . "&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
             $page->selected = 0;
             if ($i == $pageNavigation->actPage)
@@ -731,10 +734,10 @@ class celebros_search extends celebros_search_parent {
      */
     public function getQzAction() {
         $iRes = 0;
-        $sQWAction = $this->getConfig()->getParameter("iQWAction");
+        $sQWAction = $this->getConfig()->getRequestParameter("iQWAction");
 
         if (isset($sQWAction)) {
-            $iRes = (int) $this->getConfig()->getParameter("iQWAction");
+            $iRes = (int) $this->getConfig()->getRequestParameter("iQWAction");
         }
 
         return $iRes;
@@ -887,11 +890,11 @@ class celebros_search extends celebros_search_parent {
     protected function _setViewConfigWithArtPerPage($myConfig, $aNrofCatArticles) {
         $oViewConf = $this->getViewConfig();
         //value from user input
-        if (( $iNrofArticles = (int) $myConfig->getParameter('_artperpage'))) {
+        if (( $iNrofArticles = (int) $myConfig->getRequestParameter('_artperpage'))) {
             // M45 Possibility to push any "Show articles per page" number parameter
             $iNrofCatArticles = ( in_array($iNrofArticles, $aNrofCatArticles) ) ? $iNrofArticles : $iNrofCatArticles;
-            oxSession::setVar('_artperpage', $iNrofCatArticles);
-        } elseif (( $iSessArtPerPage = oxSession::getVar('_artperpage') ) && is_numeric($iSessArtPerPage)) {
+            $this->getSession()->setVariable('_artperpage', $iNrofCatArticles);
+        } elseif (( $iSessArtPerPage = $this->getSession()->getVariable('_artperpage') ) && is_numeric($iSessArtPerPage)) {
             // M45 Possibility to push any "Show articles per page" number parameter
             $iNrofCatArticles = ( in_array($iSessArtPerPage, $aNrofCatArticles) ) ? $iSessArtPerPage : $iNrofCatArticles;
         }
@@ -987,7 +990,7 @@ class celebros_search extends celebros_search_parent {
         if (!(is_array($array) && count($array) > 0))
             return false;
 
-        $object = new stdClass();
+        $object = new \stdClass();
         foreach ($array as $name => $value) {
             $name = strtolower(trim($name));
             $name = str_replace(" ", "_", $name);
@@ -1051,5 +1054,3 @@ class celebros_search extends celebros_search_parent {
     }
 
 }
-
-?>

@@ -1,39 +1,42 @@
 <?php
-
-/*
- *  Developed by webfrisch.de
- *  Author: Lukas Dierks <lukas.dierks at webfrisch.de>
- *  Date: Jun 5, 2013
- */
-
-abstract class eins_csv_export {
-
+namespace Celebros\Conversionpro\Core; 
+ 
+abstract class CsvExport
+{
     protected $_oDb;
     protected $_aOutput;
     protected $_aChildPlugins;
+    protected $_headerArray;
 
+    public function getConfig()
+    {
+        if (!$this->config) {
+            $this->config = new \OxidEsales\EshopCommunity\Core\Config();
+        }
+        
+        return $this->config;
+    }
+    
     public function export($sOutputFileHash, $iOffset, $iAmount, $aParams) {
         if (!$this->_aChildPlugins) {
-            $this->_oDb = oxDb::getDb();
-            $this->_oDb->SetFetchMode(ADODB_FETCH_ASSOC);
+            $this->_oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+            //$this->_oDb->SetFetchMode(ADODB_FETCH_ASSOC);
 
             $aDataMap = $this->_getDataMap($iAmount, $iOffset, $aParams);
-
+            
+            $i = 0;
             foreach ($aDataMap as $aSeq) {
-                $oRs = $this->_oDb->execute($aSeq['select']);
-
+                $oRs = $this->_oDb->select($aSeq['select']);
                 while (!$oRs->EOF) {
-                    $this->_processDataMap($oRs, $aSeq, $iOffset + $oRs->_currentRow);
-                    $oRs->moveNext();
+                    $this->_processDataMap($oRs, $aSeq, $iOffset + $i++);
+                    $oRs->fetchRow();
                 }
             }
 
             if ($this->getFixedOutputFileName()) {
-                $sOutputFile = oxConfig::getInstance()->getConfigParam('sShopDir') . 'modules/eins_celebros/export/' .
-                        $this->getFixedOutputFileName();
+                $sOutputFile = $this->getConfig()->getConfigParam('sShopDir') . 'modules/celebros/conversionpro/export/' . $this->getFixedOutputFileName();
             } else {
-                $sOutputFile = oxConfig::getInstance()->getConfigParam('sShopDir') . 'modules/eins_celebros/export/' .
-                        $this->getId() . "-" . $sOutputFileHash . ".csv";
+                $sOutputFile = $this->getConfig()->getConfigParam('sShopDir') . 'modules/celebros/conversionpro/export/' . $this->getId() . "-" . $sOutputFileHash . ".csv";
             }
 
             if ($iOffset == 0 && $this->getHeaderLine()) {
@@ -42,11 +45,12 @@ abstract class eins_csv_export {
 
             $sFieldWrapper = $this->_getFieldWrapper();
             $sDelimiter = $this->_getDelimiter();
+
             if ($this->_aOutput && sizeof($this->_aOutput) > 0) {
                 foreach ($this->_aOutput as $aLine) {
                     $sLine = $sFieldWrapper .
                             implode($sFieldWrapper . $sDelimiter . $sFieldWrapper, $aLine) .
-                            $sFieldWrapper . "\n";
+                            $sFieldWrapper . PHP_EOL;
                     file_put_contents($sOutputFile, $sLine, FILE_APPEND);
                 }
 
@@ -54,8 +58,7 @@ abstract class eins_csv_export {
             }
             else
                 return false;
-        }
-        else {
+        } else {
             foreach ($this->_aChildPlugins as $oPlugin) {
                 $oPlugin->export($sOutputFileHash, $iOffset, $iAmount, $aParams);
             }
@@ -66,7 +69,7 @@ abstract class eins_csv_export {
 
     protected function _processDataMap($oRs, $aDataMap, $iLineNr) {
         foreach ($aDataMap['content'] as $key => $aValue) {
-            $this->_aOutput[$iLineNr][$key] = eins_csv_interpret::getValue(null, $oRs, null, $aValue, $iLineNr, $this->_getPluginClass(), null);
+            $this->_aOutput[$iLineNr][$key] = \Celebros\Conversionpro\Core\CsvInterpret::getValue(null, $oRs, null, $aValue, $iLineNr, $this->_getPluginClass(), null);
         }
     }
 
@@ -80,9 +83,20 @@ abstract class eins_csv_export {
 
     public abstract function getId();
 
-    public abstract function _getDelimiter();
+    public function _getDelimiter()
+    {
+        $delimiter = $this->config->getConfigParam('sCel_Export_Delimiter');
+        //if ($delimiter == "\t") {
+            $delimiter = chr(9);
+        //}
+        
+        return $delimiter ? : "|";
+    }
 
-    public abstract function _getFieldWrapper();
+    public function _getFieldWrapper()
+    {
+        return $this->config->getConfigParam('sCel_Export_FieldWrapper') ? : '';
+    }
 
     public abstract function _getPluginClass();
 
@@ -110,10 +124,11 @@ abstract class eins_csv_export {
         
     }
 
-    public function getHeaderLine() {
-        return null;
+    public function getHeaderLine()
+    {
+        $header = $this->_getFieldWrapper();
+        $header .= implode($this->_getFieldWrapper() . $this->_getDelimiter()  . $this->_getFieldWrapper(), $this->_headerArray);
+        $header .= $this->_getFieldWrapper() . PHP_EOL;
+        return $header;
     }
-
 }
-
-?>

@@ -1,13 +1,15 @@
 <?php
 namespace Celebros\Conversionpro\Controller\Admin;
 
-class Synchro extends oxAdminView {
+use OxidEsales\Eshop\Application\Controller\Admin\ShopConfiguration;
 
+class Synchro extends ShopConfiguration //oxAdminView
+{
     protected $_sThisTemplate = "celebros_synchro.tpl";
 
     public function render() {
-        $this->_aViewData['sSessionId'] = oxConfig::getParameter('force_admin_sid');
-        $this->_aViewData['sToken'] = oxConfig::getParameter('stoken');
+        $this->_aViewData['sSessionId'] = $this->getConfig()->getConfigParam('force_admin_sid');
+        $this->_aViewData['sToken'] = $this->getConfig()->getConfigParam('stoken');
         
         $this->_aViewData['aExportedFiles'] = $this->_getExportFileList();
         return $this->_sThisTemplate;

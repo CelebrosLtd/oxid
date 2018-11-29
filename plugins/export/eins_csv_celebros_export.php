@@ -5,9 +5,12 @@
  *  Author: Lukas Dierks <lukas.dierks at webfrisch.de>
  *  Date: Jun 5, 2013
  */
-class eins_csv_celebros_export extends eins_csv_export {
+require_once(__DIR__ . "/../../lib/pclzip.lib.php");
+ 
+class eins_csv_celebros_export extends \Celebros\Conversionpro\Core\CsvExport {
 
     protected static $_oDBConn;
+    public $config;
 
     protected function _getDataMap($iLimit, $iOffset, $aParams) {
         
@@ -23,7 +26,7 @@ class eins_csv_celebros_export extends eins_csv_export {
 
     public static function getDb() {
         if (!eins_csv_celebros_export::$_oDBConn)
-            eins_csv_celebros_export::$_oDBConn = oxDb::getDb();
+            eins_csv_celebros_export::$_oDBConn = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
         return eins_csv_celebros_export::$_oDBConn;
     }
@@ -52,9 +55,10 @@ class eins_csv_celebros_export extends eins_csv_export {
         return 'eins_csv_celebros_export';
     }
 
-    public function getRSSize($aParams) {
+    public function getRSSize($aParams)
+    {
         $oDb = eins_csv_celebros_export::getDb();
-        $oRs = $oDb->Execute("SELECT COUNT(oxid) FROM oxarticles");
+        $oRs = $oDb->select("SELECT COUNT(oxid) FROM oxarticles");
         return $oRs->fields[0];
     }
 
@@ -69,12 +73,11 @@ class eins_csv_celebros_export extends eins_csv_export {
     public function afterExport() {
         parent::afterExport();
         
-        $sExportPath = oxConfig::getInstance()->getShopConfVar("sShopDir") .
-                "modules/eins_celebros/export/";
+        $sExportPath = $this->getConfig()->getShopConfVar("sShopDir") .
+                "modules/celebros/conversionpro/export/";
         
         $aFiles = scandir($sExportPath);
-        $sShopId = oxConfig::getInstance()->getShopId();
-
+        $sShopId = $this->getConfig()->getShopId();
         unlink($sExportPath . $sShopId . "_products" . ".zip");
         $oZipArchive = new PclZip($sExportPath . $sShopId . "_products" . ".zip");
         
@@ -88,7 +91,7 @@ class eins_csv_celebros_export extends eins_csv_export {
     }
     
     public function getFixedOutputFileName() {
-        $soxId = oxConfig::getInstance()->getActiveShop()->getId();
+        $soxId = $this->getConfig()->getActiveShop()->getId();
         return $soxId . '_products' .  '.zip';
     }
 

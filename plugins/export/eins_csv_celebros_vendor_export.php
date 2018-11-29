@@ -1,18 +1,15 @@
 <?php
-
-/*
- *  Developed by webfrisch.de
- *  Author: Lukas Dierks <lukas.dierks at webfrisch.de>
- *  Date: Jun 5, 2013
- */
-
-class eins_csv_celebros_vendor_export extends eins_csv_export {
-
+class eins_csv_celebros_vendor_export extends \Celebros\Conversionpro\Core\CsvExport
+{
     protected static $_oDBConn;
 
-    protected function _getDataMap($iLimit, $iOffset, $aParams) {
-        $soxId = oxConfig::getInstance()->getActiveShop()->getId();
-        
+    protected $_headerArray = [
+        "OXID","OXSHOPID","OXACTIVE","OXICON","OXTITLE","OXSHORTDESC","OXTITLE_1","OXSHORTDESC_1","OXTITLE_2","OXSHORTDESC_2","OXTITLE_3","OXSHORTDESC_3","OXSHOWSUFFIX","OXTIMESTAMP"
+    ];    
+    
+    protected function _getDataMap($iLimit, $iOffset, $aParams)
+    {
+        $soxId = $this->getConfig()->getActiveShop()->getId();
         $aDataMap = array(
             0 => array(
                 'select' => "SELECT * FROM oxvendor WHERE oxvendor.oxshopid='" . $soxId . "' LIMIT " . $iLimit . " OFFSET " . $iOffset,
@@ -38,44 +35,43 @@ class eins_csv_celebros_vendor_export extends eins_csv_export {
         return $aDataMap;
     }
 
-    public static function getDb() {
-        if (!eins_csv_celebros_vendor_export::$_oDBConn)
-            eins_csv_celebros_vendor_export::$_oDBConn = oxDb::getDb();
+    public static function getDb()
+    {
+        if (!self::$_oDBConn)
+            self::$_oDBConn = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
-        return eins_csv_celebros_vendor_export::$_oDBConn;
+        return self::$_oDBConn;
     }
 
-    public function getDescription() {
+    public function getDescription()
+    {
         return null;
     }
 
-    public function getTitle() {
+    public function getTitle()
+    {
         return "Celebros Vendor Data Export";
     }
 
-    public function getId() {
+    public function getId()
+    {
         return "celebros_vendor_export";
     }
 
-    public function _getDelimiter() {
-        return "|";
-    }
-
-    public function _getFieldWrapper() {
-        return '';
-    }
-
-    public function _getPluginClass() {
+    public function _getPluginClass()
+    {
         return 'eins_csv_celebros_vendor_export';
     }
 
-    public function getRSSize($aParams) {
-        $oDb = eins_csv_celebros_vendor_export::getDb();
-        $oRs = $oDb->Execute("SELECT COUNT(oxid) FROM oxvendor");
+    public function getRSSize($aParams)
+    {
+        $oDb = self::getDb();
+        $oRs = $oDb->select("SELECT COUNT(oxid) FROM oxvendor");
         return $oRs->fields[0];
     }
 
-    public function getExportParamInfo() {
+    public function getExportParamInfo()
+    {
         return array();
     }
     
@@ -83,14 +79,8 @@ class eins_csv_celebros_vendor_export extends eins_csv_export {
         return 'celebros_export';
     }
     
-    public function getFixedOutputFileName() {
-//        $soxId = oxConfig::getInstance()->getActiveShop()->getId();
+    public function getFixedOutputFileName()
+    {
         return 'oxvendor.csv';
     }
-
-    public function getHeaderLine() {
-        return "OXID|OXSHOPID|OXACTIVE|OXICON|OXTITLE|OXSHORTDESC|OXTITLE_1|OXSHORTDESC_1|OXTITLE_2|OXSHORTDESC_2|OXTITLE_3|OXSHORTDESC_3|OXSHOWSUFFIX|OXTIMESTAMP\n";
-    }
 }
-
-?>
