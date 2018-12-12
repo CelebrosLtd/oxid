@@ -1,0 +1,312 @@
+#searchSuggestions 
+{
+    background: #FFF;
+    border: 1px solid #ddd;
+    color: #616161;
+    /* font-family: Arial, Helvetica, sans-serif; */
+    position: absolute;
+    max-width: 949px;
+    z-index: 9050;
+    width: 800px !important;
+    display:none;
+    /* left: -500px !important; */
+    right: 0!important;
+    top: 34px;
+    left: auto!important;
+}
+
+#search_text {
+     position: relative;
+}
+
+#searchSuggestions .topProducts {
+    /* border-right: 1px dotted #737373; */
+    float: left;
+    margin: 15px 0 0;
+    padding-left: 15px;
+    width: 480px;
+}
+
+#searchSuggestions ul {
+     float: left;
+     letter-spacing: 0px;
+     list-style: outside none none;
+     margin: 0px;
+     padding: 0px;
+}
+
+#searchSuggestions .topProducts ul {
+    
+}
+
+#searchSuggestions ul li {
+     list-style: outside none none;
+}
+
+#searchSuggestions .headerItem, #searchSuggestions .headerTopSearch  {
+    color: #575757;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 13pt;
+    margin-bottom: 15px;
+    /* margin-left: 7px; */
+    padding: 0;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+#searchSuggestions li.productItem {
+    background-color: #FFFFFF;
+    float: left;
+    padding: 0 2px 0px;
+    width: 150px;
+	 margin-bottom: 10px !important;
+}
+
+#searchSuggestions .topProducts .productImage {
+     height: 130px;
+     /* margin-bottom: 25px; */
+     text-align: center;
+}
+
+#searchSuggestions .topProducts .productImage a{
+    display: block;
+}
+
+#searchSuggestions .topProducts .productImage img {
+     display: inline !important;
+     width: 120px;
+	 height: 120px;
+	
+}
+
+#searchSuggestions .topProducts .productDesc {
+     font-size: 13px;
+     text-align: center;
+	     white-space: normal;
+}
+
+#searchSuggestions .topProducts .productDesc span {
+     display: block;
+     height: 50px;
+}
+
+#searchSuggestions .topProducts .productDesc .productPrice {
+    /*margin-top: 25px;*/
+    color: #666;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: normal;
+    height: 35px;
+}
+
+#searchSuggestions .topProducts .productVendor {
+     text-transform: uppercase;
+}
+
+#searchSuggestions .topProducts .productDesc .toProduct{
+	background-color: #ff6b00;
+	color: #ff6b00;
+	/*font-family: "Helvetica Neue", Verdana, Arial, sans-serif;*/
+	font-weight: normal;
+	font-size: 10px;
+	padding: 7px 5px;
+	text-transform: uppercase;
+	text-decoration: none;
+	line-height: 12px;
+	display: block;
+	    border-radius: 4px
+}
+
+#searchSuggestions .topProducts .productDesc .toProduct:hover{
+	background-color: #b52337;
+	color: #b52337;
+}
+
+#searchSuggestions .topSearch {
+    float: left;
+    padding-left: 15px;
+    width: 290px;
+    min-height: 180px;
+    margin: 15px 0;
+    width: 290px;
+    /* border-left: 1px dotted #737373; */
+}
+
+#searchSuggestions .topSearch ul {
+	width: 100%;
+	text-align: left;
+}
+
+#searchSuggestions .topSearch ul li{
+	/* font-family: "Helvetica Neue", Verdana, Arial, sans-serif; */
+	font-size: 15px;
+	font-weight: 700;
+}
+
+#searchSuggestions .topSearch.noDesigner ul li{
+	line-height: 20px;
+}
+
+#searchSuggestions .topSearch.noDesigner ul li:hover{
+	background-color: #e8e8e8;
+}
+
+
+#searchSuggestions .topSearch a {
+	color: #666;
+	text-decoration: none;
+	display: block;
+}
+
+#searchSuggestions .topSearch li:hover a{
+	color: #666;
+}
+
+#searchSuggestions .topDesigner {
+     clear: right;
+     float: right;
+     margin: 20px 0px 30px 25px;
+     padding: 0px;
+     width: 290px;
+}
+
+#searchSuggestions .headerTopDesigner {
+     color: #000000;
+     font-family: DINMedium;
+     font-size: 17px;
+     font-weight: 300;
+     line-height: 13pt;
+     margin-bottom: 15px;
+     padding: 0px;
+     text-transform: uppercase;
+}
+
+.ac_li_query {
+     cursor: pointer;
+}
+
+.ellipsis {
+    
+}
+
+/* Custom Client CSS changes */
+.searchMiniContainer.open
+{
+    border-radius: 14px !important;
+	-moz-border-radius: 14px !important;
+	-webkit-border-radius: 14px !important;
+	
+}
+
+.searchMiniForm #search
+{
+    margin: 0 !important;
+}
+.search-autocomplete:before
+{
+	display: none !important;
+}
+
+.onsale-category-container{
+    z-index: 4 !important;
+}
+
+/*Override 'Go' button text*/
+.toProduct.button::before {
+    color: #fff;
+    content: "SHOP NOW";
+    padding-left: 19px;
+}
+
+@media only screen and (min-width: 992px) {
+    #searchSuggestions.absWidth {
+        width: 800px!important;
+        right: 0!important;
+        left: auto!important;
+    }
+}
+
+/* ----------- */
+@media only screen and (min-width : 768px) and (max-width : 992px) {
+    /* Styles */
+    #searchSuggestions {
+        width: 575px !important;
+        padding-left: 15px;
+        right: -95px!important;
+        left: auto!important;
+    }
+    #searchSuggestions .topProducts {
+        /*display: none !important;*/
+        width:auto;
+        padding: 0;
+    }
+    #searchSuggestions .topSearch {
+        float: left;
+        /* padding-left: 15px; */
+        width: 100%;
+    }
+}
+
+/*  ----------- */
+
+@media only screen and (min-width: 320px) and (max-width: 767px){
+/* Styles */
+    #searchSuggestions {
+        left: -8px !important;
+        right: auto !important;
+        width: 97% !important;
+        top: 137px;
+        padding: 0 15px;
+    }
+    #searchSuggestions .topProducts {
+        /*display: none !important;*/
+        width:auto;
+        padding: 0;
+    }
+    #searchSuggestions .topSearch {
+        /* float: left; */
+        /* padding-left: 15px; */
+        width: 100%;
+    }
+    #searchSuggestions li.productItem {
+        width: 100%;
+        padding:0px;
+    }
+    #searchSuggestions .topProducts .productDesc {
+        text-align: left;
+        float: left;
+        width: 78%;
+    }
+        
+    #searchSuggestions .topProducts .productImage {
+        height: 90px !important;
+        width: 20%;
+        float: left;
+    }
+    .productDesc a {
+         float: right !important;
+    }
+    #searchSuggestions .topProducts .productImage img {
+        display: inline ! important;
+        width: 50px !important;
+        height: 50px !important;
+        margin-right: 15px;
+    }
+    #searchSuggestions .topProducts .productDesc .productPrice {
+        float: left;
+        margin-right: 10px;
+    }
+}
+@media only screen and (min-width: 400px) and (max-width: 700px){
+    #searchSuggestions {
+        top: 120px;
+    }
+}
+
+/*Client Style Overrides*/
+@media (min-width: 768px) {
+    .page-wrapper header.page-header .header.content .block-search {
+        z-index: 4;
+    }
+}

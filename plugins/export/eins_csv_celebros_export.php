@@ -5,7 +5,7 @@
  *  Author: Lukas Dierks <lukas.dierks at webfrisch.de>
  *  Date: Jun 5, 2013
  */
-require_once(__DIR__ . "/../../lib/pclzip.lib.php");
+//require_once(__DIR__ . "/../../lib/pclzip.lib.php");
  
 class eins_csv_celebros_export extends \Celebros\Conversionpro\Core\CsvExport {
 
@@ -66,26 +66,33 @@ class eins_csv_celebros_export extends \Celebros\Conversionpro\Core\CsvExport {
         return array();
     }
     
-    public function getParent() {
+    public function getParent()
+    {
         return null;
     }
     
-    public function afterExport() {
+    public function afterExport()
+    {
         parent::afterExport();
-        
-        $sExportPath = $this->getConfig()->getShopConfVar("sShopDir") .
-                "modules/celebros/conversionpro/export/";
-        
+        $sExportPath = $this->getConfig()->getShopConfVar("sShopDir") . "modules/celebros/conversionpro/export/";
         $aFiles = scandir($sExportPath);
         $sShopId = $this->getConfig()->getShopId();
         unlink($sExportPath . $sShopId . "_products" . ".zip");
-        $oZipArchive = new PclZip($sExportPath . $sShopId . "_products" . ".zip");
+        try {
+            $zip = new \ZipArchive();
+        } catch (\Exception $e) {
+            return false;
+        }
         
         foreach($aFiles as $sFile) {
-            if(preg_match("/[.]*.csv/", $sFile)) {
-                var_dump($sExportPath . $sFile);
-                $oZipArchive->add($sExportPath . $sFile, PCLZIP_OPT_REMOVE_ALL_PATH);
-                unlink($sExportPath . $sFile);
+            if (preg_match("/[.]*.csv/", $sFile)) {        
+                if ($zip->open($sExportPath . $sShopId . "_products" . ".zip", \ZipArchive::CREATE) == true) {
+                    $zip->addFile($sExportPath . $sFile, basename($sExportPath . $sFile));
+                    $zip->close();
+                    unlink($sExportPath . $sFile);
+                } else {
+                    return false;
+                }
             }
         }
     }

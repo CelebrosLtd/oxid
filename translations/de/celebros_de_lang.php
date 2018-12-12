@@ -92,7 +92,7 @@ $aLang = array(
     'cel_QWISER_MOREANSWERS' => 'mehr anzeigen',
     'cel_QWISER_LESSANSWERS' => 'weniger anzeigen',
     'cel_QWISER_SUGGESTIONS' => 'Meinten Sie',
-    'PAGE_SEARCH_SEARCH_HITSFOR' => 'Search Hits For',
+    'PAGE_SEARCH_SEARCH_HITSFOR' => 'Treffer f&uuml;r',
     'charset' => 'UTF-8',
     'EMAIL_PRICEALARM_CUSTOMER_HY' => 'Hallo,',
     'EMAIL_PRICEALARM_CUSTOMER_HAVEPRICEALARM' => 'wir haben einen Preisalarm im',
@@ -177,9 +177,9 @@ $aLang = array(
     
     
     'cel_QWISER_ERROR' => 'Qwiser Error',
-    'WIDGET_PRODUCT_LOCATOR_NEXT' => 'Next',
-    'WIDGET_PRODUCT_LOCATOR_PREV' => 'Previous',
-    'FRONTEND_ALTERNATIVE_PRODUCTS' => 'Alternative Products'
+    'WIDGET_PRODUCT_LOCATOR_NEXT' => 'Neben',
+    'WIDGET_PRODUCT_LOCATOR_PREV' => 'Bisherige',
+    'FRONTEND_ALTERNATIVE_PRODUCTS' => 'Alternative Produkte'
 
 );
 

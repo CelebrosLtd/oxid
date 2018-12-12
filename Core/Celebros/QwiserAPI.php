@@ -77,8 +77,17 @@ class QwiserAPI extends \OxidEsales\EshopCommunity\Core\Base
 	 *       
 	 * @return object $oResult - search result object
 	 */	
-    function SearchAdvance($sQuery,$sSearchProfile,$iAnswerId,$sEffectOnSearchPath,$sPriceColumn,$iPageSize,$sSortingfield,$bNumericsort,$bAscending)
-    {
+    function SearchAdvance(
+        $sQuery,
+        $sSearchProfile,
+        $iAnswerId,
+        $sEffectOnSearchPath,
+        $sPriceColumn,
+        $iPageSize,
+        $sSortingfield,
+        $bNumericsort,
+        $bAscending
+    ) {
         $sQuery = rawurlencode($sQuery);
         $sSearchProfile = urlencode($sSearchProfile);
         $sSortingfield = urlencode($sSortingfield);
@@ -472,7 +481,7 @@ class QwiserAPI extends \OxidEsales\EshopCommunity\Core\Base
      */
     function SortByPrice($sSearchHandle,$bAscending)
     {
-        $sRequestUrl = "SearchHandle=".$sSearchHandle."&Ascending=".$bAscending;
+        $sRequestUrl = "SearchHandle=".$sSearchHandle."&Ascending=".$bAscending."&NumericSort=true";
         return $this->GetResult($sRequestUrl,__FUNCTION__);
     }
     
@@ -503,10 +512,10 @@ class QwiserAPI extends \OxidEsales\EshopCommunity\Core\Base
 		$sRequest = $this->sWebServiceUrl . '/' . $sReturnValue.'?';
         if(!empty($sRequestUrl)) $sRequest .= $sRequestUrl.'&';
         $sRequest .= 'Sitekey=' . $this->sSiteKey;
-//print_r($sRequest);die;        
+     
         $oQwiserParser = $this->GetQwiserParser($sRequest); 
         $oQwiserParser->set_enconig_converter('UTF-8','ISO-8859-1',2);
-	 $this->oSearchResponce = $oQwiserParser->run();
+	    $this->oSearchResponce = $oQwiserParser->run();
 
         // $sReturnValue = __FUNCTION__: The function name. (Added in PHP 4.3.0) As of PHP 5 this constant returns the function name as it was declared (case-sensitive). In PHP 4 its value is always lowercased. 
         $sReturnValue = strtolower($sReturnValue);

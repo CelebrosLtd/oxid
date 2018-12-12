@@ -6,7 +6,7 @@
     [{oxscript include=$sToolBoxURL}]
     <form>
         <input type="hidden" name="cel_ShowComments" id="cel_ShowComments" value="true" />
-        <input type="hidden" name="cel_customerId" id="cel_customerId" value="[{$oViewConf->getCelebrosCustomerId()}]" />
+        <input type="hidden" name="cel_customerId" id="cel_customerId" value="[{$oViewConf->getAnalyticsCustomerId()}]" />
         <input type="hidden" name="cel_searchHandle" id="cel_searchHandle" value="[{$oViewConf->getCelebrosSearchSessionId()}]" />
         <input type="hidden" name="cel_searchLogHandle" id="cel_searchLogHandle" value="[{$oViewConf->getCelebrosSearchLogHandle()}]" />
 [{if $sCelAnalyticsType == 'details'}]

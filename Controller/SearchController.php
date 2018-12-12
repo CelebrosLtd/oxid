@@ -8,7 +8,7 @@ class SearchController extends SearchController_parent
      * @public string
      */
     public $sThisTemplate = "celebros_qwiser.tpl";
-    public $sThisAction = "celebros_search";
+    public $sThisAction = "search";
     protected $_blShowSorting = true;
     protected $oAPI = null;
     protected $_aBannerCampaigns = array();
@@ -16,7 +16,13 @@ class SearchController extends SearchController_parent
     protected $_aRedirectCampaigns = array();
     protected $_aCustomMsgs = array();
     protected $_aSortingOrderMapping = array("asc" => "true", "desc" => "false");
-    protected $_aMappingFields = null;
+    protected $_aMappingFields = [
+        'OXTITLE' => 'Title',
+        'OXVARMINPRICE' => 'Price'
+    ];
+    protected $_isNumericSortFields = [
+        'OXVARMINPRICE' => 'Price'
+    ];
     protected $_sSearchParamForHtml;
 
     /**
@@ -26,12 +32,17 @@ class SearchController extends SearchController_parent
      */
     public function init()
     {
-        parent :: init();
+        parent::init();
     }
 
     public function getSession()
     {
         return \OxidEsales\Eshop\Core\Registry::getSession();
+    }
+    
+    public function getUtils()
+    {
+        return \OxidEsales\Eshop\Core\Registry::getUtils();
     }
     
     /**
@@ -75,7 +86,8 @@ class SearchController extends SearchController_parent
         $sSearchHandle = $oAPI->SearchHandle_decode($myConfig->getRequestParameter("sQWSearchHandle"));
 
         $qsr = $this->_executeQwiserAction($sSearchHandle, $sInitialSearchStr);
-//        var_dump($qsr->SearchHandle);
+
+        //var_dump($qsr->SearchHandle);
         
         $this->_aViewData['sCelebrosLogHandle'] = $qsr->LogHandle;
         $this->getSession()->setVariable('sCelebrosLogHandle', $qsr->LogHandle);
@@ -105,12 +117,18 @@ class SearchController extends SearchController_parent
         $this->getViewConfig()->logoutlink.='&qwiser_parameters[iQWPage]=' . $qsr->SearchInformation->CurrentPage . '&qwiser_parameters[iQWAction]=1&qwiser_parameters[sQWSearchHandle]=' . $sSearchHandle;
 
         $this->parseDynamicProperties($qsr);
+        
         //Redirect campaign execute
-        if (count($this->_aRedirectCampaigns))
-            oxUtils::getInstance()->redirect($this->_aRedirectCampaigns[0]->redirection_url);
+        if (count($this->_aRedirectCampaigns)) {
+            if (isset($this->_aRedirectCampaigns[0])) {
+                $this->getUtils()->redirect($this->_aRedirectCampaigns[0]->redirection_url);
+            }
+        }
+        
         //Set data for banner campaign
-        if (count($this->_aBannerCampaigns))
+        if (count($this->_aBannerCampaigns)) {
             $this->_aViewData['aBannerCampaigns'] = $this->_aBannerCampaigns;
+        }
 
 //        var_dump($qsr->RecommendedMessage);
         $this->_setRecommendedMessage($qsr->RecommendedMessage);
@@ -208,11 +226,13 @@ class SearchController extends SearchController_parent
      *
      * @return array Oxid=>Celebros mapping array
      */
-    protected function _getMappingFields() {
+    protected function _getMappingFields()
+    {
         $myConfig = $this->getConfig();
         if (!isset($this->_aMappingFields)) {
             $this->_aMappingFields = $myConfig->getConfigParam('mappingsalespersonfields');
         }
+        
         return $this->_aMappingFields;
     }
 
@@ -221,7 +241,8 @@ class SearchController extends SearchController_parent
      *
      * @return string $sSortFieldName Celebros Search sort field name
      */
-    protected function _getSearchSortFieldName() {
+    protected function _getSearchSortFieldName()
+    {
         $myConfig = $this->getConfig();
         $aMappingFields = $this->_getMappingFields();
         $sSortFieldName = $myConfig->getConfigParam('sCel_DefaultSortingfield');
@@ -230,6 +251,7 @@ class SearchController extends SearchController_parent
             $sListOrderBy = $this->getSession()->getVariable("listorderby");
         if ($sListOrderBy != "")
             $sSortFieldName = strtr(strtoupper($sListOrderBy), $aMappingFields);
+        
         return $sSortFieldName;
     }
 
@@ -238,11 +260,13 @@ class SearchController extends SearchController_parent
      *
      * @return bool $bNumericSort Celebros Search numeric or alpanumeric sort parameter
      */
-    protected function _getSearchNumericSort() {
+    protected function _getSearchNumericSort()
+    {
         $myConfig = $this->getConfig();
-        $aSortingIsNumericMapping = $myConfig->getConfigParam('mappingisnumericsortfields');
+        //$aSortingIsNumericMapping = $myConfig->getConfigParam('mappingisnumericsortfields');
         $sListOrderBy = $myConfig->getRequestParameter("listorderby");
-        $bNumericSort = $aSortingIsNumericMapping[strtoupper($sListOrderBy)] ? "true" : "false";
+        $bNumericSort = isset($this->_isNumericSortFields[strtoupper($sListOrderBy)]) ? "true" : "false";
+        
         return $bNumericSort;
     }
 
@@ -251,7 +275,8 @@ class SearchController extends SearchController_parent
      *
      * @return integer $iSortAscending Celebros Search ascending or descending sort parameter
      */
-    protected function _getSortAscending() {
+    protected function _getSortAscending()
+    {
         $myConfig = $this->getConfig();
         $iSortAscending = $myConfig->getConfigParam('bCel_DefaultAscending');
         $sListOrder = $myConfig->getRequestParameter("listorder");
@@ -259,6 +284,7 @@ class SearchController extends SearchController_parent
             $sListOrder = $this->getSession()->getVariable("listorder");
         if ($sListOrder != "")
             $iSortAscending = strtr($sListOrder, $this->_aSortingOrderMapping);
+        
         return $iSortAscending;
     }
 
@@ -270,7 +296,8 @@ class SearchController extends SearchController_parent
      *
      * @return object $qsr Celebros response object
      */
-    protected function _executeQwiserAction($sSearchHandle, $sInitialSearchStr) {
+    protected function _executeQwiserAction($sSearchHandle, $sInitialSearchStr)
+    {
         $myConfig = $this->getConfig();
         $oAPI = $this->getCelebrosSearchApi();
 
@@ -342,8 +369,8 @@ class SearchController extends SearchController_parent
      *
      * @return object $qsr Celebros response object
      */
-    protected function _MakeSortRequest($sSearchHandle, $sSortFieldName, $bNumericSort, $iSortAscending) {
-
+    protected function _MakeSortRequest($sSearchHandle, $sSortFieldName, $bNumericSort, $iSortAscending)
+    {
         $oAPI = $this->getCelebrosSearchApi();
 
         switch ($sSortFieldName) {
@@ -369,7 +396,8 @@ class SearchController extends SearchController_parent
      *
      * @return null
      */
-    protected function _setArticlesList($products, $relevantProductsCount, $searchInformation, $searchHandle) {
+    protected function _setArticlesList($products, $relevantProductsCount, $searchInformation, $searchHandle)
+    {
         $this->setNrOfCatArticles($relevantProductsCount);
 
         /* load articles */
@@ -422,7 +450,8 @@ class SearchController extends SearchController_parent
      *
      * @return bool whether number of articles passed is more than 0
      */
-    protected function _hasArticlesInList($oArtList) {
+    protected function _hasArticlesInList($oArtList)
+    {
         return (count($oArtList->aList) > 0);
     }
 
@@ -437,7 +466,8 @@ class SearchController extends SearchController_parent
      *
      * @return object $qsr holds the response with the search results from the Celebros server
      */
-    protected function _defaultSearch($sInitialSearchStr, $iPageSize, $sSortFieldName, $bNumericSort, $iSortAscending) {
+    protected function _defaultSearch($sInitialSearchStr, $iPageSize, $sSortFieldName, $bNumericSort, $iSortAscending)
+    {
         $myConfig = $this->getConfig();
         $oAPI = $this->getCelebrosSearchApi();
 
@@ -446,18 +476,19 @@ class SearchController extends SearchController_parent
             $sQWSearchProfile = $myConfig->getConfigParam('sCel_DefaultSearchProfile');
 
         $sQWAnswerId = $myConfig->getRequestParameter("sQWAnswerId");
-        if ($sQWAnswerId == "")
-            $sQWAnswerId = $myConfig->getConfigParam('iCel_DefaultAnswerId');
+        /*if ($sQWAnswerId == "")
+            $sQWAnswerId = $myConfig->getConfigParam('iCel_DefaultAnswerId');*/
 
         $sQWEffectOnSearchPath = $myConfig->getRequestParameter("sQWEffectOnSearchPath");
-        if ($sQWEffectOnSearchPath == "")
-            $sQWEffectOnSearchPath = $myConfig->getConfigParam('iCel_DefaultEffectOnSearchPath');
+        /*if ($sQWEffectOnSearchPath == "")
+            $sQWEffectOnSearchPath = $myConfig->getConfigParam('iCel_DefaultEffectOnSearchPath');*/
 
-        $sQWPriceColum = $myConfig->getRequestParameter("sQWPriceColum");
+        $sQWPriceColum = 'Price'; //$myConfig->getRequestParameter("sQWPriceColum");
         if ($sQWPriceColum == "")
             $sQWPriceColum = $myConfig->getConfigParam('sCel_DefaultPriceColum');
 
         $qsr = $oAPI->SearchAdvance($sInitialSearchStr, $sQWSearchProfile, $sQWAnswerId, $sQWEffectOnSearchPath, $sQWPriceColum, $iPageSize, $sSortFieldName, $bNumericSort, $iSortAscending);
+        
         return $qsr;
     }
 
@@ -469,13 +500,15 @@ class SearchController extends SearchController_parent
      *
      * @return null
      */
-    protected function _setHiddenSid($sSearchHandle, $oSearchInformation) {
+    protected function _setHiddenSid($sSearchHandle, $oSearchInformation)
+    {
         $sHiddenSid = $this->getViewConfig()->hiddensid;
 
         // additional parameters (first check and remove existing)
         if (strstr($sHiddenSid, 'qwiser_parameters')) {
             $sHiddenSid = preg_replace('/<input.*name="qwiser_parameters.*\/>/', '', $sHiddenSid);
         }
+        
         $sHiddenSid.= '<input type="hidden" name="qwiser_parameters[sQWSearchHandle]" value="' . $sSearchHandle . '" />';
         $sHiddenSid.= '<input type="hidden" name="qwiser_parameters[iQWPage]" value="' . $oSearchInformation->CurrentPage . '" />';
         $sHiddenSid.= '<input type="hidden" name="qwiser_parameters[iQWAction]" value="1" />';
@@ -491,7 +524,8 @@ class SearchController extends SearchController_parent
      *
      * @return null
      */
-    protected function _setSearchParameters($sInitialSearchStr) {
+    protected function _setSearchParameters($sInitialSearchStr)
+    {
         #$this->_aViewData['searchparam'] = htmlentities($sInitialSearchStr);
         $this->_aViewData['searchparam'] = $sInitialSearchStr;
         $this->_aViewData['searchparamforhtml'] = $sInitialSearchStr;
@@ -507,7 +541,8 @@ class SearchController extends SearchController_parent
      *
      * @return null
      */
-    protected function _setPageNavigation($qsr, $sSearchStr, $sSearchHandle, $myConfig) {
+    protected function _setPageNavigation($qsr, $sSearchStr, $sSearchHandle, $myConfig)
+    {
         // generate the page navigation
         $pageNavigation = new \stdClass();
         $pageNavigation->iArtCnt = $qsr->RelevantProductsCount; //$qsr->SearchInformation->PageSize;
@@ -517,18 +552,18 @@ class SearchController extends SearchController_parent
 
         $pageNavigation->previousPage = null;
         if ($pageNavigation->actPage > 1)
-            $pageNavigation->previousPage = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&iQWPage=" . ($pageNavigation->actPage - 2) . "&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
+            $pageNavigation->previousPage = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&stoken=" . $this->getViewConfig()->getSessionChallengeToken() . "&iQWPage=" . ($pageNavigation->actPage - 2) . "&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
 
         $pageNavigation->nextPage = null;
         if ($pageNavigation->actPage < $pageNavigation->NrOfPages)
-            $pageNavigation->nextPage = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&iQWPage=" . ($pageNavigation->actPage) . "&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
+            $pageNavigation->nextPage = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&stoken=" . $this->getViewConfig()->getSessionChallengeToken() . "&iQWPage=" . ($pageNavigation->actPage) . "&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
 
         if ($pageNavigation->NrOfPages > 1) {
             $pageNavigation = $this->_addNavigationPages($pageNavigation, $myConfig, $sSearchStr, $sSearchHandle);
             // first/last one
-            $pageNavigation->firstpage = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&iQWPage=0&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
+            $pageNavigation->firstpage = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&stoken=" . $this->getViewConfig()->getSessionChallengeToken() . "&iQWPage=0&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
             $iLast = $pageNavigation->NrOfPages - 1;
-            $pageNavigation->lastpage = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&iQWPage=" . $iLast . "&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
+            $pageNavigation->lastpage = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&stoken=" . $this->getViewConfig()->getSessionChallengeToken() . "&iQWPage=" . $iLast . "&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
         }
 
         $this->_aViewData['pageNavigation'] = $pageNavigation;
@@ -545,7 +580,8 @@ class SearchController extends SearchController_parent
      *
      * @return object $pageNavigation navigation pages for UI
      */
-    protected function _addNavigationPages($pageNavigation, $myConfig, $sSearchStr, $sSearchHandle) {
+    protected function _addNavigationPages($pageNavigation, $myConfig, $sSearchStr, $sSearchHandle)
+    {
         for ($i = 1; $i < $pageNavigation->NrOfPages + 1; $i++) {
             $page = new \stdClass();
             $page->url = $myConfig->getShopHomeURL() . "cl=" . $this->sThisAction . "&iQWPage=" . ($i - 1) . "&searchparam=$sSearchStr&sQWSearchHandle={$sSearchHandle}&iQWAction=1";
@@ -554,6 +590,7 @@ class SearchController extends SearchController_parent
                 $page->selected = 1;
             $pageNavigation->changePage[$i] = $page;
         }
+        
         return $pageNavigation;
     }
 
@@ -564,8 +601,8 @@ class SearchController extends SearchController_parent
      *
      * @return object $questions Celebros search response questions object
      */
-    protected function _setLeadQuestion($questions) {
-
+    protected function _setLeadQuestion($questions)
+    {
         if ($questions->Count == 0) {
             $this->_aViewData['LeadQuestion'] = false;
             return $questions;
@@ -606,7 +643,8 @@ class SearchController extends SearchController_parent
      *
      * @return object $oLeadQuestion Celebros search response question object
      */
-    protected function _transformLeadQuestionAnswers($oLeadQuestion, $iQuiser_max_lead_answers) {
+    protected function _transformLeadQuestionAnswers($oLeadQuestion, $iQuiser_max_lead_answers)
+    {
         if (($oLeadQuestion->Answers->Count + $oLeadQuestion->ExtraAnswers->Count) > $iQuiser_max_lead_answers) {
             $aAnswers = array();
             $aAnswers = array_merge($oLeadQuestion->Answers->Items, $oLeadQuestion->ExtraAnswers->Items);
@@ -621,6 +659,7 @@ class SearchController extends SearchController_parent
             if ($oLeadQuestion->ExtraAnswers->Count > 0)
                 $oLeadQuestion->HasExtraAnswers = 1;
         }
+        
         return $oLeadQuestion;
     }
 
@@ -631,7 +670,8 @@ class SearchController extends SearchController_parent
      *
      * @return object $questions Celebros search response questions object
      */
-    protected function _setNonLeadQuestion($questions) {
+    protected function _setNonLeadQuestion($questions)
+    {
         $myConfig = $this->getConfig();
         $iQuiser_max_non_lead_questions = (int) $myConfig->getConfigParam('iCel_MaxNoneLeadQuestions');
         $iQuiser_max_non_lead_answers = (int) $myConfig->getConfigParam('iCel_MaxNoneLeadAnswers');
@@ -641,6 +681,7 @@ class SearchController extends SearchController_parent
             $questions->Items = array_slice($questions->Items, 0, $iQuiser_max_non_lead_questions);
             $questions->Count = count($questions->Items);
         }
+        
         if (isset($questions->Items)) {
             foreach ($questions->Items as $index => $Question) {
                 if (!is_array($Question->ExtraAnswers->Items)) {
@@ -666,7 +707,8 @@ class SearchController extends SearchController_parent
      *
      * @return object $question Celebros search response question object
      */
-    protected function _transformNonLeadQuestionAnswers($Question, $iQuiser_max_non_lead_answers) {
+    protected function _transformNonLeadQuestionAnswers($Question, $iQuiser_max_non_lead_answers)
+    {
         if (($iQuiser_max_non_lead_answers != "") && ($Question->Answers->Count + $Question->ExtraAnswers->Count > $iQuiser_max_non_lead_answers)) {
             $aAnswers = array();
             $aAnswers = array_merge($Question->Answers->Items, $Question->ExtraAnswers->Items);
@@ -682,6 +724,7 @@ class SearchController extends SearchController_parent
             //else
             //$oLeadQuestion->HasExtraAnswers = 0;
         }
+        
         return $Question;
     }
 
@@ -732,7 +775,8 @@ class SearchController extends SearchController_parent
      *
      * @return string $iRes user's action parameter
      */
-    public function getQzAction() {
+    public function getQzAction()
+    {
         $iRes = 0;
         $sQWAction = $this->getConfig()->getRequestParameter("iQWAction");
 
@@ -748,7 +792,8 @@ class SearchController extends SearchController_parent
      *
      * @return string addition parameters for UI
      */
-    public function getAdditionalParams() {
+    public function getAdditionalParams()
+    {
         return $this->_aViewData['additionalparams'];
     }
 
@@ -759,7 +804,8 @@ class SearchController extends SearchController_parent
      *
      * @return null
      */
-    public function setNrOfCatArticles($articlesCount) {
+    public function setNrOfCatArticles($articlesCount)
+    {
         $res = array();
         $arrNrOfCatArticles = $this->getConfig()->getConfigParam('aNrofCatArticles');
 
@@ -780,7 +826,8 @@ class SearchController extends SearchController_parent
      *
      * @return object page navigation for UI
      */
-    public function generatePageNavigation($iPositionCount = 0) {
+    public function generatePageNavigation($iPositionCount = 0)
+    {
         startProfile('generatePageNavigation');
 
         stopProfile('generatePageNavigation');
@@ -793,18 +840,18 @@ class SearchController extends SearchController_parent
      *
      * @return array $aPaths bread crumbs for UI
      */
-    public function getBreadCrumb() {
+    public function getBreadCrumb()
+    {
         $selfLink = $this->getViewConfig()->getSelfLink();
         $searchlink = $this->_aViewData['searchlink'];
         $searchparam = $this->_aViewData['searchparam'];
-//        var_dump($searchparam);
         $SearchHandle = $this->_aViewData['SearchHandle'];
 
         $aPaths = array();
         $aPath = array();
 
 
-//        $aPath['title'] = "<a href='{$selfLink}cl=celebros_search{$searchlink}'>{$searchparam}</a>";
+//        $aPath['title'] = "<a href='{$selfLink}cl=search{$searchlink}'>{$searchparam}</a>";
         $aSearchPath = explode("+", $searchparam);//$this->_aViewData['aSearchPath'];
         
 //        $aSearchPath->Count = sizeof($aSearchPath['Items']);
@@ -819,9 +866,9 @@ class SearchController extends SearchController_parent
                 if($iStartIndex >= 1)$link .= "+";
                 $link .= $oSearchPath;
                 $link = urlencode($link);
-                $aPath[$iStartIndex]['link'] = "{$selfLink}cl=celebros_search&searchparam={$link}";
+                $aPath[$iStartIndex]['link'] = "{$selfLink}cl=search&searchparam={$link}";
                 $aPath[$iStartIndex]['title'] = $oSearchPath;
-//                $link.= "<a href='{$selfLink}cl=celebros_search&iQWAction=3&iQWStartIndex={$iStartIndex}$searchlink'>{$oSearchPath}</a>/";
+//                $link.= "<a href='{$selfLink}cl=search&iQWAction=3&iQWStartIndex={$iStartIndex}$searchlink'>{$oSearchPath}</a>/";
                 $iStartIndex++;
             }
         }
@@ -851,7 +898,8 @@ class SearchController extends SearchController_parent
      *
      * @return null
      */
-    protected function _setNrOfArtPerPage() {
+    protected function _setNrOfArtPerPage()
+    {
         $myConfig = $this->getConfig();
 
         //setting default values to avoid possible errors showing article list
@@ -909,7 +957,8 @@ class SearchController extends SearchController_parent
      *
      * @return null
      */
-    public function parseDynamicProperties($results) {
+    public function parseDynamicProperties($results)
+    {
         if ($results->QueryConcepts->Count > 0) {
             foreach ($results->QueryConcepts->Items as $queryConcept) {
                 if (isset($queryConcept->DynamicProperties)) {
@@ -925,6 +974,7 @@ class SearchController extends SearchController_parent
                 }
             }
         }
+        //die;
     }
 
     /**
@@ -935,6 +985,7 @@ class SearchController extends SearchController_parent
      * @return bool $bCampaignAdded is camaign was added
      */
     protected function _addCampaign($propertiesBag) {
+//print_r($propertiesBag);die;
         $bCampaignAdded = false;
         if (isset($propertiesBag->banner_landing_page) || isset($propertiesBag->banner_image)) {
             $this->_aBannerCampaigns[] = $propertiesBag;
@@ -946,6 +997,7 @@ class SearchController extends SearchController_parent
             $this->_aRedirectCampaigns[] = $propertiesBag;
             $bCampaignAdded = true;
         } else if (isset($propertiesBag->custom_message)) {
+//print_r($propertiesBag->custom_message);die;
             $this->_aCustomMsgs[] = $propertiesBag;
             $bCampaignAdded = true;
         }
@@ -959,7 +1011,8 @@ class SearchController extends SearchController_parent
      *
      * @return bool $bActiveCampain if campaing is active
      */
-    protected function _isCampaignActive($propertiesBag) {
+    protected function _isCampaignActive($propertiesBag)
+    {
         $bActiveCampain = true;
         if (isset($propertiesBag->start_datetime) && strtotime($propertiesBag->start_datetime) > time())
             $bActiveCampain = false;
@@ -973,9 +1026,17 @@ class SearchController extends SearchController_parent
      *
      * @return string alternative products message
      */
-    public function getAlternativeProductsMsg() {
+    public function getAlternativeProductsMsg()
+    {
+        return [];
+        
+        $result = [];
         $campaigns = $this->getAlternativeProductsCampaigns();
-        return (count($campaigns) ? $campaigns[0]->alternative_products : "");
+        foreach ($campaigns as $campaign) {
+            $result[] = $campaign->alternative_products;
+        }
+        
+        return $result; //(count($campaigns) ? $campaigns[0]->alternative_products : "");
     }
 
     /**
@@ -1016,7 +1077,7 @@ class SearchController extends SearchController_parent
      * @return array alternative products campaign array
      */
     public function getAlternativeProductsCampaigns() {
-        $this->_aAlternativeProductsCampaigns;
+        return $this->_aAlternativeProductsCampaigns;
     }
 
     /**

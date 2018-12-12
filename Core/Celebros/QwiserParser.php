@@ -20,7 +20,6 @@ namespace Celebros\Conversionpro\Core\Celebros;
   
 class QwiserParser
 {
-
 	// Qwiser XMLservice data
 	public $oParser;
 	public $sRequest;
@@ -85,7 +84,7 @@ class QwiserParser
 			"AddtionalSuggestions" => "Value",
 			"SpecialCasesDetectedInThisSearch" => "Value",
 			"QueryConcepts" => "Concept",
-            "SearchPath" =>"Entry",
+            "SearchPath" => "Entry",
             "AddtionalSuggestions" => "Value",
             "SpecialCasesDetectedInThisSession" => "Value",
             "SearchEngineStatus" => "SiteStatus",
@@ -118,7 +117,7 @@ class QwiserParser
 	 *
 	 * @return null
 	 */    
-    function set_enconig_converter($sSourceEnconing , $sTargetEncoding , $iEncodingMethod)
+    function set_enconig_converter($sSourceEnconing, $sTargetEncoding, $iEncodingMethod)
     {
         $this->sSourceEnconing = $sSourceEnconing;
         $this->sTargetEncoding = $sTargetEncoding;
@@ -157,14 +156,12 @@ class QwiserParser
      *
      * @return null
      */    
-    function set_htmlentities_converter(){
-    	if(!$this->isPhpFunctionExist("htmlentities"))
-    	{
+    function set_htmlentities_converter()
+    {
+    	if (!$this->isPhpFunctionExist("htmlentities")) {
     		$this->sLastOperationErrorMessage = "Could not set encoding converter method ".$this->iEncodingMethod;
     		$this->blLastOperationSucceeded = 0;
-    	}
-    	else
-    	{
+    	} else {
     		// we need this to restore HTML tags from entities in strings ;
     		$this->aRestoreHtmlEntities = array_flip(get_html_translation_table(HTML_SPECIALCHARS,ENT_COMPAT));
     	}
@@ -175,9 +172,9 @@ class QwiserParser
      *
      * @return null
      */    
-    function set_iconv_converter(){
-		if(!$this->isPhpFunctionExist("iconv"))
-		{
+    function set_iconv_converter()
+    {
+		if (!$this->isPhpFunctionExist("iconv")) {
 			$this->sLastOperationErrorMessage = "Could not set encoding converter method ".$this->iEncodingMethod;
 			$this->blLastOperationSucceeded = 0;
 		}
@@ -188,9 +185,9 @@ class QwiserParser
      *
      * @return null
      */    
-    function set_mb_convert_encoding_converter(){
-		if(!$this->isPhpFunctionExist("mb_convert_encoding"))
-		{
+    function set_mb_convert_encoding_converter()
+    {
+		if (!$this->isPhpFunctionExist("mb_convert_encoding")) {
 			$this->sLastOperationErrorMessage = "Could not set encoding converter method ".$this->iEncodingMethod;
 			$this->blLastOperationSucceeded = 0;
 		} 
@@ -201,9 +198,9 @@ class QwiserParser
      *
      * @return null
      */    
-    function set_recode_string_converter(){
-    	if(!$this->isPhpFunctionExist("recode_string"))
-    	{
+    function set_recode_string_converter()
+    {
+    	if (!$this->isPhpFunctionExist("recode_string")) {
     		$this->sLastOperationErrorMessage = "Could not set encoding converter method ".$this->iEncodingMethod;
     		$this->blLastOperationSucceeded = 0;
     	}
@@ -216,7 +213,8 @@ class QwiserParser
      *
      * @return null
      */    
-    function isPhpFunctionExist($name){
+    function isPhpFunctionExist($name)
+    {
     	return function_exists($name);
     }
     
@@ -229,8 +227,7 @@ class QwiserParser
      */    
     function convert_encoding($sInput)
     {
-        switch ($this->iEncodingMethod) 
-        {
+        switch ($this->iEncodingMethod) {
             case 2:
             {
 				return strtr(htmlentities($sInput, ENT_COMPAT, $this->sSourceEnconing),$this->aRestoreHtmlEntities);
@@ -257,7 +254,7 @@ class QwiserParser
                 return $sInput; 
                 break;
             }
-		    }
+		}
     }
 
     /**
@@ -293,7 +290,6 @@ class QwiserParser
 		xml_set_character_data_handler($this->oParser, 'characterDataHandler');
 
 		$this->parse($fp);
-        
         return $this->oResult;
 	}
 	
@@ -302,7 +298,8 @@ class QwiserParser
 	 *
 	 * @return null
 	 */	
-	function createParser(){
+	function createParser()
+    {
 		if ($this->iEncodingMethod === 1 && $this->sSourceEnconing)
 		{
 			$this->oParser = xml_parser_create($this->sSourceEnconing);
@@ -318,7 +315,8 @@ class QwiserParser
 	 *
 	 * @return null
 	 */	
-	function parse($fp){
+	function parse($fp)
+    {
 		while ($data = fread($fp, 4096))
 		{
 			if (!xml_parse($this->oParser, $data, feof($fp)))
@@ -336,7 +334,8 @@ class QwiserParser
 	 *
 	 * @return resource @fopen pointer to response
 	 */	
-	function getSearchXmlHandle() {
+	function getSearchXmlHandle()
+    {
 		return @fopen($this->sRequest, "r");
 	}
 	
@@ -352,37 +351,32 @@ class QwiserParser
 	function startElementHandler($oParser, $sName, $aAttributes)
 	{
 		//array_push($this->aCurTags,$sName);
-        
-        if (array_key_exists($sName, $this->aCounterReseters)) $this->aCounters[$this->aCounterReseters[$sName]] = 0;
-	
+        if (array_key_exists($sName, $this->aCounterReseters)) {
+            $this->aCounters[$this->aCounterReseters[$sName]] = 0;
+        }
 
-		if (array_key_exists($sName, $this->aCounters))
-		{
-
-			if (!empty ($this->sArrayCountPropertyName))
-			{
+		if (array_key_exists($sName, $this->aCounters)) {
+			if (!empty($this->sArrayCountPropertyName)) {
 				$sCounterNode = $this->sCurTag . '->' . $this->sArrayCountPropertyName . '=' . ($this->aCounters[$sName] + 1) . ';';
-				eval ($sCounterNode);
+                $prop =& $this->_getPropFromString($this->sCurTag);
+                $propName = $this->sArrayCountPropertyName;
+                $value = $this->aCounters[$sName] + 1;
+                $prop->$propName = $value;
 			}
 
-			if ($this->sReplaceArrayNamesWith)
-			{
+			if ($this->sReplaceArrayNamesWith) {
 				$this->sCurTag .= '->' . $this->sReplaceArrayNamesWith;
-			} 
-            else
-			{
+			} else {
 				$this->sCurTag .= '->' . $sName;
 			}
 
 			$this->sCurTag .= '[' . $this->aCounters[$sName] . ']';
 			$this->aCounters[$sName]++;
-		} 
-        else
-		{
+		} else {
 			$this->sCurTag .= '->' . $sName;
 		}
 
-		$this->evaluateNode($aAttributes);
+		$this->evaluateNode($aAttributes, $sName);
 	}
 	
 	/**
@@ -392,26 +386,22 @@ class QwiserParser
 	 *
 	 * @return null
 	 */	
-	function evaluateNode($aAttributes) {
+	function evaluateNode($aAttributes, $sName=null)
+    {
 		$iAttributesCount = count($aAttributes);
-		
-		if ($iAttributesCount)
-		{
+		if ($iAttributesCount) {
 			$blAttributerAsAssocArray = ($iAttributesCount == 2 && count(array_diff(array_keys($aAttributes), $this->aAttributesAsAssocArray)) == 0) ? true : false;
-		
-			if ($blAttributerAsAssocArray)
-			{
-				$sNode = $this->sCurTag . '["' . $aAttributes[$this->aAttributesAsAssocArray[0]] . '"]="' . addslashes($this->convert_encoding($aAttributes[$this->aAttributesAsAssocArray[1]])) . '";';
-				eval ($sNode);
-			}
-			else
-			{
-				foreach ($aAttributes as $name => $value)
-				{
-					$sNode = $this->sCurTag . '->' . $name . '="' . addslashes($this->convert_encoding($value)) . '";';
-					@eval ($sNode);
+			if ($blAttributerAsAssocArray) {
+				//$sNode = $this->sCurTag . '["' . $aAttributes[$this->aAttributesAsAssocArray[0]] . '"]="' . addslashes($this->convert_encoding($aAttributes[$this->aAttributesAsAssocArray[1]])) . '";';
+                $prop =& $this->_getPropFromString(
+                    $this->sCurTag . '[' . $aAttributes[$this->aAttributesAsAssocArray[0]] . ']', $this->_prepareData($this->convert_encoding($aAttributes[$this->aAttributesAsAssocArray[1]]))
+                );
+			} else {
+				foreach ($aAttributes as $name => $value) {
+					//$sNode = $this->sCurTag . '->' . $name . '="' . addslashes($this->convert_encoding($value)) . '";';
+                    $prop =& $this->_getPropFromString($this->sCurTag);
+                    $prop->$name = $this->_prepareData($this->convert_encoding($value));
 				}
-		
 			}
 		}		
 	}
@@ -427,11 +417,9 @@ class QwiserParser
 	function endElementHandler($oParser, $sName)
 	{
 		//array_pop($this->aCurTags);
-        
-        if (!empty ($this->sCurCdata))
-		{
-			$sNode = $this->sCurTag . "='".addslashes($this->convert_encoding($this->sCurCdata))."';";
-			eval ($sNode);
+        if (!empty ($this->sCurCdata)) {
+			$sNode = $this->sCurTag . "='" . $this->_prepareData($this->convert_encoding($this->sCurCdata)) . "';";
+			eval($sNode);
 		}
         
 		$this->sCurTag = substr($this->sCurTag, 0, strrpos($this->sCurTag, '->'));
@@ -449,16 +437,57 @@ class QwiserParser
 	function characterDataHandler($oParser, $sData)
 	{
 		$sData = str_replace(rawurldecode("%09"), "", $sData);
-		if (($this->sCurCdata == '') && (str_replace("\n", '', $sData) == ''))
-		{
+		if (($this->sCurCdata == '') && (str_replace("\n", '', $sData) == '')) {
 			$sData = str_replace("\n", '', $sData);
 		}
-		if ($sData != '')
-		{
+        
+		if ($sData != '') {
 			$this->sCurCdata .= $sData;
 		}
-
 	}
 
+    protected function _prepareData(String $string)
+    {
+        return /*addslashes(*/$string/*)*/;
+    }
+    
+    protected function _getPropFromString(String $string, $value=null)
+    {
+        $prop = null;
+        $ev = explode('->', $string);
+        $num = count($ev);
+        $i = 0;
+        foreach ($ev as $item) {
+            $i++;
+            if ($item == '$this') {
+                $prop =& $this;
+            } else {
+                if (strpos($item, "[") !== false) {
+                    $tmp = explode("[", $item);
+                    $tmp[1] = str_replace("]", "", $tmp[1]);
+                    $p = $tmp[0];
+                    $k = $tmp[1];
+                    if ($i === $num && $value) {
+                        $prop->$p[$k] = $value;
+                        $prop =& $prop->$p[$k];
+                        return $prop;    
+                    }
+                    
+                    if (!isset($prop->$p[$k])) {
+                        $prop->$p[$k] = new \stdClass();
+                    }
+                    
+                    $prop =& $prop->$p[$k];
+                } else {
+                    if (!isset($prop->$item)) {
+                        $prop->$item = new \stdClass();
+                    }
+                    
+                    $prop =& $prop->$item;
+                }
+            }
+        }
+        
+        return $prop;    
+    }    
 }
-?>

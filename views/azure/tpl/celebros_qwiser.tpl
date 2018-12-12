@@ -14,6 +14,12 @@ http://il1.php.net/mb_convert_encoding
         [{assign var="search_head" value="`$search_head` <a class=\"rss external\" id=\"rssSearchProducts\" href=\"`$rsslinks.searchArticles.link`\" title=\"`$rsslinks.searchArticles.title`\"><img src=\"$imgUrl\" alt=\"`$rsslinks.searchArticles.title`\"><span class=\"FXgradOrange corners glowShadow\">`$rsslinks.searchArticles.title`</span></a>"}]
 [{/if}]
 
+[{assign var='customMessages' value=$oView->getCustomMsgs() }]
+[{if $customMessages}]
+[{foreach from=$customMessages item=custMessage}]
+[{$custMessage->custom_message}]
+[{/foreach}]
+[{/if}]
 [{assign var='bannerCampaigns' value=$oView->getBannerCampaigns() }]
 [{if $bannerCampaigns}]
 	[{* Please notice that it is possible to have more than one banner campaign *}]
@@ -25,34 +31,38 @@ http://il1.php.net/mb_convert_encoding
 	[{* ########### START - change for celebros interface ########################## *}]
 	[{assign var="template_title" value="cel_QWISER_TITLE"|oxmultilangassign}]
 	
-	[{ assign var="template_location" value=" <a href=\""|cat:$oViewConf->getSelfLink()|cat:"cl=celebros_search"|cat:$searchlink|cat:"\">"|cat:$searchparam|cat:"</a>" }]
+	[{ assign var="template_location" value=" <a href=\""|cat:$oViewConf->getSelfLink()|cat:"cl=search"|cat:$searchlink|cat:"\">"|cat:$searchparam|cat:"</a>" }]
 	
 	[{if $aSearchPath->Count > 0 }]
 	  [{assign var="iStartIndex" value="1"}]
 	  [{foreach from=$aSearchPath->Items item=oSearchPath}]
-	    [{ assign var="template_location" value=$template_location|cat:" / <a href=\""|cat:$oViewConf->getSelfLink()|cat:"cl=celebros_search&iQWAction=3&sQWSearchHandle="|cat:$SearchHandle|cat:"&iQWStartIndex="|cat:$iStartIndex|cat:$searchlink|cat:"\">"|cat:$oSearchPath->Answers->Items[0]->Text|cat:"</a>"}]
+	    [{ assign var="template_location" value=$template_location|cat:" / <a href=\""|cat:$oViewConf->getSelfLink()|cat:"cl=search&iQWAction=3&sQWSearchHandle="|cat:$SearchHandle|cat:"&iQWStartIndex="|cat:$iStartIndex|cat:$searchlink|cat:"\">"|cat:$oSearchPath->Answers->Items[0]->Text|cat:"</a>"}]
 	    [{assign var="iStartIndex" value=$iStartIndex+1}]
 	  [{/foreach}]
 	[{/if}]
-	
+
 	[{if $oView->getArticleCount() }]
-    <div class="listRefine clear bottomRound">
+    <div class="listRefine clear topRound">
         [{block name="search_top_listlocator"}]
-        [{include file="eins_celebros_listlocator.tpl"  locator=$pageNavigation listDisplayType=true itemsPerPage=true sort=true}]
+        [{include file="celebros_listlocator.tpl" locator=$pageNavigation listDisplayType=true itemsPerPage=true sort=true}]
         [{/block}]
     </div>
 	[{*[{else}]
     <div class="msg">[{ oxmultilang ident="PAGE_SEARCH_SEARCH_NOITEMSFOUND" }]
-    [{assign var='alternativeProductsMsg' value=$oView->getAlternativeProductsMsg() }]
-    [{if $alternativeProductsMsg}]
-			<br/>
-    	[{$alternativeProductsMsg}]
-    [{/if}]
-    
     </div>
 	*}]
   [{/if}]
-	
+
+    [{assign var='alternativeProductsMsg' value=$oView->getAlternativeProductsMsg() }]
+    [{if $alternativeProductsMsg}]
+    <div class="msg">
+        [{oxmultilang ident="FRONTEND_ALTERNATIVE_PRODUCTS"}]: 
+        [{foreach from=$alternativeProductsMsg item=altmsg}]
+    	<a href="[{$oViewConf->getSelfLink()}]cl=search&searchparam=[{$altmsg}]&stoken=[{$oViewConf->getSessionChallengeToken()}]">[{$altmsg}]</a>
+        [{/foreach}]
+    </div>
+    [{/if}]
+  
 	[{* Service error messages *}]
 	[{if $ErrorMessage }]
 		<div class="error">
@@ -67,7 +77,7 @@ http://il1.php.net/mb_convert_encoding
 		[{if $aAdditionalSuggestions->Count}]
 		  <br><br>[{ oxmultilang ident="cel_QWISER_SUGGESTIONS" }]: 
 		  [{foreach from=$aAdditionalSuggestions->Items item=Suggestion }]
-		    <b><a href="[{$oViewConf->getSelfLink()}]&cl=celebros_search&searchparam=[{$Suggestion|escape:'url'}]">[{$Suggestion}]</a></b>
+		    <b><a href="[{$oViewConf->getSelfLink()}]&cl=search&searchparam=[{$Suggestion|escape:'url'}]">[{$Suggestion}]</a></b>
 		  [{/foreach}]
 		  ?
 		[{/if}]
@@ -116,7 +126,7 @@ http://il1.php.net/mb_convert_encoding
 			  
 			  [{capture assign="tmp1"}]
 			  <td align="center" width="[{ $tplCellWidth }]%" valign="top" id="tplAnswerL1_[{$tplCounter}]" class="[{if $tplPageNr == $tplCurrentPage }]tplVisibleCell[{else}]tplHiddenCell[{/if}]">
-			  	<a href="[{$oViewConf->getSelfLink()}]cl=celebros_search&iQWAction=2&sQWAnswerId=[{ $oAnswer->Id }][{$searchlink}]">
+			  	<a href="[{$oViewConf->getSelfLink()}]cl=search&iQWAction=2&sQWAnswerId=[{ $oAnswer->Id }][{$searchlink}]">
 			  	  <img src="[{ $oViewConf->getPictureDir()}][{$oAnswer->ImageUrl }]" border="0" alt="[{ $oAnswer->Text }]">
 			  	</a>  
 		      </td>
@@ -125,7 +135,7 @@ http://il1.php.net/mb_convert_encoding
 		      
 		      [{capture assign="tmp2"}]
 			  <td  align="center" width="[{ $tplCellWidth }]%" id="tplAnswerL2_[{$tplCounter}]" class="[{if $tplPageNr == $tplCurrentPage }]tplVisibleCell[{else}]tplHiddenCell[{/if}]">
-		        <a href="[{$oViewConf->getSelfLink()}]cl=celebros_search&iQWAction=2&sQWAnswerId=[{ $oAnswer->Id }][{$searchlink}]" class="categorylink">[{ $oAnswer->Text }] ([{ $oAnswer->ProductCount }])</a>
+		        <a href="[{$oViewConf->getSelfLink()}]cl=search&iQWAction=2&sQWAnswerId=[{ $oAnswer->Id }][{$searchlink}]" class="categorylink">[{ $oAnswer->Text }] ([{ $oAnswer->ProductCount }])</a>
 		      </td>
 		      [{/capture}]
 		      [{assign var="column2" value=$column2|cat:$tmp2}]
@@ -251,11 +261,11 @@ http://il1.php.net/mb_convert_encoding
 	    <table cellspacing="0" style="margin-right:-3px;min-width:100%;width:94%;">
 	     <tr>
 	       <td align="left">
-	         <a id="tplPrevPageLink" href="[{$oViewConf->getSelfLink()}]cl=celebros_search[{$searchlink}]&tplSetPage=[{$tplPrevPage}]" style="display:[{if $tplPrevPage}]inline[{else}]none[{/if}]" onClick="tplPrevPage(); return false"><img src="[{$oViewConf->getImageUrl()}]filledqwiserleftarrow.gif" border="0"></a>
+	         <a id="tplPrevPageLink" href="[{$oViewConf->getSelfLink()}]cl=search[{$searchlink}]&tplSetPage=[{$tplPrevPage}]" style="display:[{if $tplPrevPage}]inline[{else}]none[{/if}]" onClick="tplPrevPage(); return false"><img src="[{$oViewConf->getImageUrl()}]filledqwiserleftarrow.gif" border="0"></a>
 	       </td>
 	       <td id="tplCurrentAnswersBox">[{ $allpages }]</td>
 	       <td align="right">
-	         <a id="tplNextPageLink" href="[{$oViewConf->getSelfLink()}]cl=celebros_search[{$searchlink}]&tplSetPage=[{$tplNextPage}]" style="display:[{if $tplNextPage}]inline[{else}]none[{/if}]" onClick="tplNextPage(); return false"><img src="[{$oViewConf->getImageUrl()}]filledqwiserrightarrow.gif" border="0"></a>
+	         <a id="tplNextPageLink" href="[{$oViewConf->getSelfLink()}]cl=search[{$searchlink}]&tplSetPage=[{$tplNextPage}]" style="display:[{if $tplNextPage}]inline[{else}]none[{/if}]" onClick="tplNextPage(); return false"><img src="[{$oViewConf->getImageUrl()}]filledqwiserrightarrow.gif" border="0"></a>
 	       </td>
 	    </tr>
 	    [{if $moreAnswersCount}]
@@ -296,7 +306,7 @@ http://il1.php.net/mb_convert_encoding
 
 <div class="listRefine clear bottomRound">	
   [{if $oView->getArticleCount() }]
-    [{include file="eins_celebros_listlocator.tpl"  locator=$pageNavigation listDisplayType=true }]
+    [{include file="celebros_listlocator.tpl" locator=$pageNavigation listDisplayType=true }]
   [{/if}]
 </div>
   [{/block}]

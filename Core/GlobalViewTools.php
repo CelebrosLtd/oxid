@@ -69,9 +69,20 @@ class GlobalViewTools extends GlobalViewTools_parent
         return $iActPage + $offset;
     }
     
+    public function getAnalyticsCustomerId()
+    {
+        return $this->getConfig()->getShopConfVar("sCel_AnalyticsCustomerId");
+    }    
+    
     public function getToolboxScript()
     {
         $sSearchServiceURL = $this->getCelebrosAnalyticsHost();
         return "https://{$sSearchServiceURL}/widgets/CelebrosToolbox.js";
+    }
+    
+    public function getACScriptUrl()
+    {
+        $acHost = $this->getConfig()->getConfigParam('sCel_AutocompleteUrl');
+        return "https://{$acHost}/AutoComplete/Scripts/CelebrosAutoCompleteV3e.js";   
     }
 }

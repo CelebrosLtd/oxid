@@ -20,7 +20,7 @@ $aModule = array(
     'id' => 'celebros_conversionpro',
     'title' => 'Celebros ConversionPro',
     'description' => '',
-    'version' => '3.0.1',
+    'version' => '3.0.2',
     'author' => 'Celebros',
     'thumbnail'   => 'logo.png',
     'email'       => 'support@celebros.com',
@@ -46,7 +46,8 @@ $aModule = array(
         'celebros_export_overview.tpl' => 'celebros/conversionpro/views/admin/tpl/export_overview.tpl',
         'celebros_import_overview.tpl' => 'celebros/conversionpro/views/admin/tpl/import_overview.tpl',
         'celebros_qwiser.tpl' => 'celebros/conversionpro/views/azure/tpl/celebros_qwiser.tpl',
-        'cel_refinmentstree.tpl' => 'celebros/conversionpro/views/azure/tpl/cel_refinmentstree.tpl'
+        'cel_refinmentstree.tpl' => 'celebros/conversionpro/views/azure/tpl/cel_refinmentstree.tpl',
+        'celebros_listlocator.tpl' => 'celebros/conversionpro/views/azure/tpl/celebros_listlocator.tpl'        
     ),
     
     'blocks' => array(
@@ -55,6 +56,6 @@ $aModule = array(
         array('template' => 'layout/base.tpl', 'block' => 'head_css', 'file' => 'views/azure/tpl/blocks/head_css.tpl'),
         array('template' => 'layout/base.tpl', 'block' => 'base_js', 'file' => 'analytics/celebros_analytics_search.tpl'),
         array('template' => 'layout/sidebar.tpl', 'block' => 'sidebar_categoriestree', 'file' => 'views/azure/tpl/blocks/eins_celebros_sidebar.tpl'),
-        array('template' => 'widget/header/search.tpl', 'block' => 'header_search_field', 'file' => 'views/azure/tpl/blocks/eins_celebros_search_field.tpl')
+        array('template' => 'widget/header/search.tpl', 'block' => 'header_search_field', 'file' => 'views/azure/tpl/blocks/celebros_ac.tpl')
     )
 );
